@@ -15,6 +15,14 @@ class Login(QMainWindow):
         self.conn = sqlite3.connect(self.db_name)
         self.c = self.conn.cursor()
 
+        self.username_label = QLabel("Username : ", self)
+        self.password_label = QLabel("Password : ", self)
+
+        self.username_LineEdit = QLineEdit("", self)
+        self.password_LineEdit = QLineEdit("", self)
+
+        self.UI()
+
         self._Create_DB()
         
         if self._DB_is_empty() == []:
@@ -52,65 +60,44 @@ class Login(QMainWindow):
             False
 
     def new_user(self, username, password):
-        pass
+        if len(username) > 0 and len(password) > 0:
+            username = txt_to_hash(username)
+            password = txt_to_hash(password)
+            self.c.execute("INSERT INTO User (username, password) VALUES (?, ?)", (username, password,))
+            self.conn.commit()
+            self.close()
+
+    def UI(self):
+        self.username_label.setGeometry(50, 50, 1, 1)
+        self.username_label.setFont(QFont("Consolas", 15))        
+        self.username_label.adjustSize()
+
+        self.password_label.setGeometry(50, 100, 1, 1)
+        self.password_label.setFont(QFont("Consolas", 15))        
+        self.password_label.adjustSize()
+
+        self.username_LineEdit.setGeometry(160, 53, 250, 20)
+
+        self.password_LineEdit.setGeometry(160, 103, 250, 20)
+        self.password_LineEdit.setEchoMode(QLineEdit.EchoMode.Password)
 
     def login_UI(self):
-                
-        self.login_username_label = QLabel("username : ", self)
-        self.login_password_label = QLabel("Password : ", self)
-
-        self.login_username_LineEdit = QLineEdit("", self)
-        self.login_password_LineEdit = QLineEdit("", self)
-
         self.login_verify_button = QPushButton("Login", self)
-
-
-        self.login_username_label.setGeometry(50, 50, 1, 1)
-        self.login_username_label.setFont(QFont("Consolas", 15))        
-        self.login_username_label.adjustSize()
-
-        self.login_password_label.setGeometry(50, 100, 1, 1)
-        self.login_password_label.setFont(QFont("Consolas", 15))        
-        self.login_password_label.adjustSize()
-
-        self.login_username_LineEdit.setGeometry(140, 53, 270, 20)
-
-        self.login_password_LineEdit.setGeometry(160, 103, 250, 20)
-        self.login_password_LineEdit.setEchoMode(QLineEdit.EchoMode.Password)
 
         self.login_verify_button.setGeometry(190, 150, 1, 1)
         self.login_verify_button.adjustSize()
 
+        self.login_verify_button.clicked.connect(lambda : print(self.Check_user_info(self.username_LineEdit.text(), self.password_LineEdit.text())))
+
     def signIn_UI(self):
-
         self.setWindowTitle("Sign In")
-                
-        self.signIn_username_label = QLabel("username : ", self)
-        self.signIn_password_label = QLabel("Password : ", self)
-
-        self.signIn_username_LineEdit = QLineEdit("", self)
-        self.signIn_password_LineEdit = QLineEdit("", self)
-
-        self.signIn_username_LineEdit.setPlaceholderText("Set username ...")
-        self.signIn_password_LineEdit.setPlaceholderText("Set password ...")
 
         self.signIn_verify_button = QPushButton("Sign In", self)
 
-        self.signIn_username_label.setGeometry(50, 50, 1, 1)
-        self.signIn_username_label.setFont(QFont("Consolas", 15))        
-        self.signIn_username_label.adjustSize()
-
-        self.signIn_password_label.setGeometry(50, 100, 1, 1)
-        self.signIn_password_label.setFont(QFont("Consolas", 15))        
-        self.signIn_password_label.adjustSize()
-        
-        self.signIn_username_LineEdit.setGeometry(140, 53, 270, 20)
-
-        self.signIn_password_LineEdit.setGeometry(160, 103, 250, 20)
-        self.signIn_password_LineEdit.setEchoMode(QLineEdit.EchoMode.Password)
-
         self.signIn_verify_button.setGeometry(190, 150, 1, 1)
         self.signIn_verify_button.adjustSize()
+
+        self.signIn_verify_button.clicked.connect(lambda : self.new_user(self.username_LineEdit.text(), self.password_LineEdit.text()))
 
 
 def main():
