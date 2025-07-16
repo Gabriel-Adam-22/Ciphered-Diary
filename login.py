@@ -8,7 +8,6 @@ class Login(QMainWindow):
     def __init__(self, ):
         super().__init__()
         self.setGeometry(550, 300, 450, 200)
-        self.setWindowTitle("Login")
 
         self.db_name = "Ciphered_Diary.db"
 
@@ -21,18 +20,18 @@ class Login(QMainWindow):
         self.username_LineEdit = QLineEdit("", self)
         self.password_LineEdit = QLineEdit("", self)
 
-        self.UI()
+        self._UI()
 
-        self._Create_DB()
+        self.Create_DB()
         
-        if self._DB_is_empty() == []:
-            self.signIn_UI()
+        if self.DB_is_empty() == []:
+            self._signIn_UI()
 
         else:
-            self.login_UI()
+            self._login_UI()
 
-
-    def _Create_DB(self):
+    # Data Base management
+    def Create_DB(self):
         self.c.execute("""
         CREATE TABLE IF NOT EXISTS User (
             username TEXT NOT NULL,
@@ -41,12 +40,13 @@ class Login(QMainWindow):
         """)
         self.conn.commit()
 
-    def _DB_is_empty(self):
+    def DB_is_empty(self):
         self.c.execute("SELECT * FROM User")
         content = self.c.fetchall()
 
         return content
 
+    # Check identifier
     def Check_user_info(self, given_username, given_password):
         self.c.execute("SELECT * FROM User")
         self.connectionInfo = self.c.fetchall()[0]
@@ -67,7 +67,8 @@ class Login(QMainWindow):
             self.conn.commit()
             self.close()
 
-    def UI(self):
+    # Set Main UI
+    def _UI(self):
         self.username_label.setGeometry(50, 50, 1, 1)
         self.username_label.setFont(QFont("Consolas", 15))        
         self.username_label.adjustSize()
@@ -81,7 +82,10 @@ class Login(QMainWindow):
         self.password_LineEdit.setGeometry(160, 103, 250, 20)
         self.password_LineEdit.setEchoMode(QLineEdit.EchoMode.Password)
 
-    def login_UI(self):
+    # Set Login or SignIn UI
+    def _login_UI(self):
+        self.setWindowTitle("Login")
+
         self.login_verify_button = QPushButton("Login", self)
 
         self.login_verify_button.setGeometry(190, 150, 1, 1)
@@ -89,7 +93,7 @@ class Login(QMainWindow):
 
         self.login_verify_button.clicked.connect(lambda : print(self.Check_user_info(self.username_LineEdit.text(), self.password_LineEdit.text())))
 
-    def signIn_UI(self):
+    def _signIn_UI(self):
         self.setWindowTitle("Sign In")
 
         self.signIn_verify_button = QPushButton("Sign In", self)
