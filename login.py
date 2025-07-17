@@ -1,10 +1,10 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QPushButton
+from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton
 from PyQt6.QtGui import QFont
 from Hash import txt_to_hash
 import sys
 import sqlite3
 
-class Login(QMainWindow):
+class Login(QWidget):
     def __init__(self, ):
         super().__init__()
         self.setGeometry(550, 300, 450, 200)
@@ -104,13 +104,3 @@ class Login(QMainWindow):
         self.signIn_verify_button.clicked.connect(lambda : self.new_user(self.username_LineEdit.text(), self.password_LineEdit.text()))
 
 
-def main():
-    app = QApplication(sys.argv)
-    app.setStyle("windowsvista")
-
-    window = Login()
-    window.show()
-    sys.exit(app.exec())
-
-if __name__ == "__main__":
-    main()
