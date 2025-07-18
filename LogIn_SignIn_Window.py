@@ -1,7 +1,6 @@
-from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton
+from PyQt6.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QMessageBox
 from PyQt6.QtGui import QFont
 from Hash import txt_to_hash
-import sys
 import sqlite3
 
 class LogIn_SignIn(QWidget):
@@ -10,12 +9,13 @@ class LogIn_SignIn(QWidget):
         self.setGeometry(550, 300, 450, 200)
 
         self.db_name = "Ciphered_Diary.db"
+        self.login_is_ok = False # Used to determine if the login was granted
 
         self.conn = sqlite3.connect(self.db_name)
         self.c = self.conn.cursor()
 
-        self.username_label = QLabel("Username : ", self)
-        self.password_label = QLabel("Password : ", self)
+        self.username_Label = QLabel("Username : ", self)
+        self.password_Label = QLabel("Password : ", self)
 
         self.username_LineEdit = QLineEdit("", self)
         self.password_LineEdit = QLineEdit("", self)
@@ -24,11 +24,9 @@ class LogIn_SignIn(QWidget):
 
         self.Create_DB()
         
-        if self.DB_is_empty() == []:
-            self._signIn_UI()
+        if self.isDbEmpty() == []:  self._signIn_UI()
 
-        else:
-            self._login_UI()
+        else:  self._login_UI()
 
     # Data Base management
     def Create_DB(self):
@@ -40,49 +38,58 @@ class LogIn_SignIn(QWidget):
         """)
         self.conn.commit()
 
-    def DB_is_empty(self):
+    def isDbEmpty(self):
         self.c.execute("SELECT * FROM User")
-        content = self.c.fetchall()
+        user_identifiers = self.c.fetchall()
 
-        return content
+        return user_identifiers
 
     # Check identifier
-    def Check_user_info(self, given_username, given_password):
-        self.c.execute("SELECT * FROM User")
-        self.connectionInfo = self.c.fetchall()[0]
+    def checkUserInfo(self, given_username, given_password):
 
-        registered_username = self.connectionInfo[0]
-        registered_password = self.connectionInfo[1]
+        self.c.execute("SELECT * FROM User")
+        self.identifiers = self.c.fetchall()[0]
+
+        registered_username = self.identifiers[0]
+        registered_password = self.identifiers[1]
 
         if txt_to_hash(given_username) == registered_username and txt_to_hash(given_password) == registered_password:
-            return True
+            self.login_is_ok = True
+            self.close()
         else:
-            False
+            self._Login_MessageboxError()
 
-    def new_user(self, username, password):
-        if len(username) > 0 and len(password) > 0:
+    def newUser(self, username, password):
+        if len(username) > 0 and len(password) > 4:
+
             username = txt_to_hash(username)
             password = txt_to_hash(password)
+            
             self.c.execute("INSERT INTO User (username, password) VALUES (?, ?)", (username, password,))
             self.conn.commit()
+
+            self.login_is_ok = True
+
             self.close()
+        
+        else:
+            self._Login_MessageboxError()
 
-    # Set Main UI
+    # Set UI
     def _UI(self):
-        self.username_label.setGeometry(50, 50, 1, 1)
-        self.username_label.setFont(QFont("Consolas", 15))        
-        self.username_label.adjustSize()
+        self.username_Label.setGeometry(50, 50, 1, 1)
+        self.username_Label.setFont(QFont("Consolas", 15))        
+        self.username_Label.adjustSize()
 
-        self.password_label.setGeometry(50, 100, 1, 1)
-        self.password_label.setFont(QFont("Consolas", 15))        
-        self.password_label.adjustSize()
+        self.password_Label.setGeometry(50, 100, 1, 1)
+        self.password_Label.setFont(QFont("Consolas", 15))        
+        self.password_Label.adjustSize()
 
         self.username_LineEdit.setGeometry(160, 53, 250, 20)
 
         self.password_LineEdit.setGeometry(160, 103, 250, 20)
         self.password_LineEdit.setEchoMode(QLineEdit.EchoMode.Password)
 
-    # Set Login or SignIn UI
     def _login_UI(self):
         self.setWindowTitle("Login")
 
@@ -91,7 +98,7 @@ class LogIn_SignIn(QWidget):
         self.login_verify_button.setGeometry(190, 150, 1, 1)
         self.login_verify_button.adjustSize()
 
-        self.login_verify_button.clicked.connect(lambda : print(self.Check_user_info(self.username_LineEdit.text(), self.password_LineEdit.text())))
+        self.login_verify_button.clicked.connect(lambda : self.checkUserInfo(self.username_LineEdit.text(), self.password_LineEdit.text()))
 
     def _signIn_UI(self):
         self.setWindowTitle("Sign In")
@@ -101,8 +108,16 @@ class LogIn_SignIn(QWidget):
         self.signIn_verify_button.setGeometry(190, 150, 1, 1)
         self.signIn_verify_button.adjustSize()
 
-        self.signIn_verify_button.clicked.connect(lambda : self.new_user(self.username_LineEdit.text(), self.password_LineEdit.text()))
+        self.signIn_verify_button.clicked.connect(lambda : self.newUser(self.username_LineEdit.text(), self.password_LineEdit.text()))
 
+    def _Login_MessageboxError(self):
+        messagebox_error = QMessageBox()
+        messagebox_error.setIcon(QMessageBox.Icon.Critical)
+        messagebox_error.setWindowTitle("Error")
+        messagebox_error.setText("The Username or Password is incorrect")
+        messagebox_error.setStandardButtons(QMessageBox.StandardButton.Ok)
+        messagebox_error.exec()
 
-    def test(self):
-        return True
+    # Use to determine if the login was granted
+    def LoginGranted(self):
+        return self.login_is_ok
