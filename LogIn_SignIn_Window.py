@@ -4,7 +4,7 @@ from Hash import txt_to_hash
 import sys
 import sqlite3
 
-class Login(QWidget):
+class LogIn_SignIn(QWidget):
     def __init__(self, ):
         super().__init__()
         self.setGeometry(550, 300, 450, 200)
@@ -104,3 +104,5 @@ class Login(QWidget):
         self.signIn_verify_button.clicked.connect(lambda : self.new_user(self.username_LineEdit.text(), self.password_LineEdit.text()))
 
 
+    def test(self):
+        return True
